@@ -26,7 +26,7 @@
 # @example get_region_anomalies("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))
 # Returns temperature anomalies in the region of Nordrhein-Westfalen
 
-
+#Load required libraries
 library(tidyverse)
 library(lubridate)
 library(sf)
@@ -34,7 +34,8 @@ library(sp)
 library(units)
 library(opensensmapr)
 
-find_defective <<- function(model, df, region){
+#Find defective boxes in a region based on a linear regression model and cooks distance
+find_defective <- function(model, df, region){
   
   cooksd <- cooks.distance(model)
   influential <- as.numeric(names(cooksd)[(cooksd > (4/nrow(df)))])
@@ -44,6 +45,8 @@ find_defective <<- function(model, df, region){
   return(influential_boxes)
 }
 
+
+#Find potential data anomalies in a region based on a clean linear regression model and cooks distance
 find_potential_anomaly <<- function(clean_model, clean_df, region){
   
   clean_cooks <<- cooks.distance(clean_model)
@@ -55,7 +58,7 @@ find_potential_anomaly <<- function(clean_model, clean_df, region){
  
 }
 
-
+#Get and return anomalies for a whole region
 get_region_anomalies <- function(phenom, bbox){
   #Get all the boxes
   boxes <- osem_boxes()

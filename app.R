@@ -33,11 +33,13 @@ ui <- fluidPage(
             
             helpText("Maps"),
             
+            #Create input for phenomena
             selectInput("phen",
                         label = "Choose a phenomena to display",
                         choices = "Temperature",
                         selected = "Temperature"),
             
+            #Create input for type of data
             selectInput("type",
                         label = "Choose a the type of data to display",
                         choices = c("Normal", "Potential anomaly", "Defective box", "All"),
@@ -53,6 +55,7 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     
+    #Convert data to reactive 
     data <- reactive({
         nrw <- region_boxes
         l_anomaly <- local_anomaly_df
@@ -60,6 +63,7 @@ server <- function(input, output) {
         defect <- influential_boxes
     })
     
+    #Make leaflet
     output$map <- renderLeaflet({
         region_boxes <- data()
         
@@ -68,6 +72,7 @@ server <- function(input, output) {
             fitBounds(~min(lon), ~min(lat), ~max(lon), ~max(lat))
     })
     
+    #Show data on leaflet based on selected input
     observeEvent(input$type, {
         
         proxy <- leafletProxy('map')
