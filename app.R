@@ -33,11 +33,6 @@ ui <- fluidPage(
             
             helpText("Input"),
             
-            #Create refresh button
-            actionButton("refresh",
-                label = "Refresh"
-            ),
-            
             #Create input for phenomena
             selectInput("phen",
                         label = "Choose a phenomena to display",
