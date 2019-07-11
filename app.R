@@ -31,7 +31,12 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             
-            helpText("Maps"),
+            helpText("Input"),
+            
+            #Create refresh button
+            actionButton("refresh",
+                label = "Refresh"
+            ),
             
             #Create input for phenomena
             selectInput("phen",
@@ -48,7 +53,7 @@ ui <- fluidPage(
                 
         
         # Show a plot of the generated distribution
-            mainPanel(leafletOutput("map", width = 600, height=600))
+            mainPanel(leafletOutput("map"))
     )
 )
 
