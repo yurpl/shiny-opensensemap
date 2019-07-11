@@ -18,13 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 # SOFTWARE.
 #
-# Function to get sensebox data and find influential values
-#
-# @param phenom Returns boxes with given phenomen
-# @param bbox Specify bounding box using st_bbox to get boxes within a region
-# @return Filtered box dataframe measurements with data anomalies
-# @example get_region_anomalies("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))
-# Returns temperature anomalies in the region of Nordrhein-Westfalen
+# Function to get sensebox data and find influential values using cook's distance method and IQR method
 
 #Load required libraries
 library(tidyverse)
@@ -63,7 +57,7 @@ find_outliers_iqr_sd <<- function(df){
 
 
 #Find defective boxes in a region based on a linear regression model and cooks distance
-find_defective <<- function(model, df, region){
+find_defective_cooks <<- function(model, df, region){
   
   cooksd <- cooks.distance(model)
   influential <- as.numeric(names(cooksd)[(cooksd > (4/nrow(df)))])
@@ -75,7 +69,7 @@ find_defective <<- function(model, df, region){
 
 
 #Find potential data anomalies in a region based on a clean linear regression model and cooks distance
-find_potential_anomaly <<- function(clean_model, clean_df, region){
+find_potential_anomaly_cooks <<- function(clean_model, clean_df, region){
   
   clean_cooks <<- cooks.distance(clean_model)
   clean_influential <- as.numeric(names(clean_cooks)[(clean_cooks > (4/nrow(clean_df)))])
@@ -87,7 +81,7 @@ find_potential_anomaly <<- function(clean_model, clean_df, region){
 }
 
 #Get and return anomalies for a whole region
-get_region_anomalies <- function(phenom, bbox){
+get_region_anomalies_cooks <- function(phenom, bbox){
   #Get all the boxes
   boxes <- osem_boxes()
   
@@ -108,14 +102,14 @@ get_region_anomalies <- function(phenom, bbox){
   
   #Create linear model
   overall_model <- lm(value ~ createdAt, data = phenom_df, na.action=na.omit)
-  find_defective(overall_model, phenom_df, region_boxes)
+  find_defective_cooks(overall_model, phenom_df, region_boxes)
   
   clean_data <<- phenom_df %>%
     filter(!phenom_df$value %in% influential_df$value) %>%
     select(value, createdAt, sensorId, lat, lon)
 
   clean_model <- lm(value ~ createdAt, data=clean_data)
-  find_potential_anomaly(clean_model, clean_data, region_boxes)
+  find_potential_anomaly_cooks(clean_model, clean_data, region_boxes)
   
   normal_temp <<- clean_data %>%
     filter(!clean_data$value %in% local_anomaly_df$value) %>%
@@ -129,4 +123,4 @@ get_region_anomalies <- function(phenom, bbox){
 #Find and create data frames for IQR and standard deviation detection
 #Detects outliers using 1.5 * IQR rule and then uses standard deviation detection finding data 2 standard deviations away from the mean
 
-get_region_anomalies("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))
+get_region_anomalies_cooks("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))
