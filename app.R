@@ -22,6 +22,8 @@
 
 library(shiny)
 library(leaflet)
+source("global.R", local = TRUE)
+
 #Define UI
 ui <- fluidPage(
 
@@ -40,9 +42,9 @@ ui <- fluidPage(
             
             #Create input for type of data
             selectInput("type",
-                        label = "Choose a the type of data to display",
-                        choices = c("Normal", "Potential anomaly", "Defective box", "All"),
-                        selected = "Normal")
+                        label = "Choose the type of data to display",
+                        choices = c("All", "Potential anomaly", "Defective box", "Normal"),
+                        selected = "All")
         ),
                 
         
@@ -57,9 +59,6 @@ server <- function(input, output) {
     #Convert data to reactive 
     data <- reactive({
         nrw <- region_boxes
-        l_anomaly <- local_anomaly_df
-        normal <- normal_temp_df
-        defect <- influential_boxes
     })
     
     #Make leaflet
@@ -118,14 +117,14 @@ server <- function(input, output) {
         else if(input$type == "Normal" & input$stat == "IQR"){
             proxy %>%
                 clearMarkers() %>%
-                addCircleMarkers(lng = normal_iqr_values$lon, lat = normal_iqr_values$lat, radius = 4, color = '#00851f', popup = paste("Box ID:", normal_iqr_values$box_id, "<br>","Temperature:", normal_iqr_values$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1)
+                addCircleMarkers(lng = normal_iqr_values_df$lon, lat = normal_iqr_values_df$lat, radius = 4, color = '#00851f', popup = paste("Box ID:", normal_iqr_values_df$box_id, "<br>","Temperature:", normal_iqr_values_df$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1)
         }
         else if(input$type == "All" & input$stat == "IQR"){
             proxy %>%
                 clearMarkers() %>%
                 addCircleMarkers(lng = defective_boxes_iqr$lon, lat = defective_boxes_iqr$lat, radius = 6, color = '#ff0000', popup = paste("Box ID:", defective_boxes_iqr$box_id, "<br>","Temperature:", defective_boxes_iqr$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1) %>%
                 addCircleMarkers(lng = potential_anomalies_iqr$lon, lat = potential_anomalies_iqr$lat, radius = 6, color = '#f2ff00', popup = paste("Box ID:", potential_anomalies_iqr$box_id, "<br>", "Temperature:", potential_anomalies_iqr$value, "Celsius", "</br>"),  stroke = FALSE, fillOpacity = 1) %>%
-                addCircleMarkers(lng = normal_iqr_values$lon, lat = normal_iqr_values$lat, radius = 4, color = '#00851f', popup = paste("Box ID:", normal_iqr_values$box_id, "<br>","Temperature:", normal_iqr_values$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1)
+                addCircleMarkers(lng = normal_iqr_values_df$lon, lat = normal_iqr_values_df$lat, radius = 4, color = '#00851f', popup = paste("Box ID:", normal_iqr_values_df$box_id, "<br>","Temperature:", normal_iqr_values_df$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1)
         }
          
     })
