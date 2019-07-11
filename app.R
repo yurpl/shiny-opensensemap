@@ -31,13 +31,12 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             
-            helpText("Input"),
-            
             #Create input for phenomena
-            selectInput("phen",
-                        label = "Choose a phenomena to display",
-                        choices = "Temperature",
-                        selected = "Temperature"),
+            selectInput("stat",
+                        label = "Choose the outlier detection method",
+                        choices = c("Cook's distance", "IQR", "Residuals", "Z score"),
+                        selected = "Cook's distance"
+            ),
             
             #Create input for type of data
             selectInput("type",
@@ -48,7 +47,7 @@ ui <- fluidPage(
                 
         
         # Show a plot of the generated distribution
-            mainPanel(leafletOutput("map"))
+            mainPanel(leafletOutput("map", width = "100%", height = 600))
     )
 )
 
@@ -73,34 +72,44 @@ server <- function(input, output) {
     })
     
     #Show data on leaflet based on selected input
-    observeEvent(input$type, {
+    observeEvent({input$type
+        input$stat}, {
         
         proxy <- leafletProxy('map')
         
-        if(input$type == "Normal"){
+        #Cook's Distance input
+        if(input$type == "Normal" & input$stat == "Cook's distance"){
             proxy %>% 
                 clearMarkers() %>%
                 addCircleMarkers(lng = normal_temp$lon, lat = normal_temp$lat, radius = 4, color = '#00851f', popup = paste("Box ID:", normal_temp_df$box_id, "<br>","Temperature:", normal_temp_df$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1)
         }
         
-        else if(input$type == "Potential anomaly"){
+        else if(input$type == "Potential anomaly" & input$stat == "Cook's distance"){
             proxy %>% 
                 clearMarkers() %>%
                 addCircleMarkers(lng = local_anomaly_df$lon, lat = local_anomaly_df$lat, radius = 6, color = '#f2ff00', popup = paste("Box ID:", local_anomaly_df$box_id, "<br>", "Temperature:", local_anomaly_df$value, "Celsius", "</br>"),  stroke = FALSE, fillOpacity = 1)
         }
         
-        else if(input$type == "Defective box"){
+        else if(input$type == "Defective box" & input$stat == "Cook's distance"){
             proxy %>% 
                 clearMarkers() %>%
                 addCircleMarkers(lng = influential_boxes$lon, lat = influential_boxes$lat, radius = 6, color = '#ff0000', popup = paste("Box ID:", influential_boxes$box_id, "<br>","Temperature:", influential_boxes$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1)
         }
-        else if(input$type == "All"){
+        else if(input$type == "All" & input$stat == "Cook's distance"){
             proxy %>% 
                 clearMarkers() %>%
                 addCircleMarkers(lng = influential_boxes$lon, lat = influential_boxes$lat, radius = 6, color = '#ff0000', stroke = FALSE, fillOpacity = 1) %>%
                 addCircleMarkers(lng = local_anomaly_df$lon, lat = local_anomaly_df$lat, radius = 6, color = '#f2ff00', stroke = FALSE, fillOpacity = 1) %>%
                 addCircleMarkers(lng = normal_temp$lon, lat = normal_temp$lat, radius = 4, color = '#00851f', stroke = FALSE, fillOpacity = 1)
         }
+        
+        #IQR input
+        if(input$type == "Defective box" & input$stat == "IQR"){
+            proxy %>%
+                clearMarkers() %>%
+                addCircleMarkers(lng = defective_boxes_iqr$lon, lat = defective_boxes_iqr$lat, radius = 6, color = '#ff0000', popup = paste("Box ID:", defective_boxes_iqr$box_id, "<br>","Temperature:", defective_boxes_iqr$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1)
+        }
+        
     })
     
 }
