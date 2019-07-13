@@ -36,7 +36,7 @@ ui <- fluidPage(
             #Create input for phenomena
             selectInput("stat",
                         label = "Choose the outlier detection method",
-                        choices = c("Cook's distance", "IQR", "Residuals", "Z score"),
+                        choices = c("Cook's distance", "IQR"),
                         selected = "Cook's distance"
             ),
             
