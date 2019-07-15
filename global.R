@@ -96,7 +96,8 @@ get_region_anomalies_cooks <- function(phenom, bbox){
     exposure="outdoor",
     phenomenon = phenom,
     from = now() - minutes(5),
-    to = now()
+    to = now(),
+    cache = '.'
   )
   find_outliers_iqr_sd(phenom_df)
   
