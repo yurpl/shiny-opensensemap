@@ -30,7 +30,7 @@ library(opensensmapr)
 
 
 
-
+#Function to find outliers using IQR and SD
 find_outliers_iqr_sd <<- function(df){
   range_iqr <- 1.5 * IQR(df$value)
   upper_iqr <- quantile(df$value, .75) + range_iqr
@@ -80,10 +80,10 @@ find_potential_anomaly_cooks <<- function(clean_model, clean_df, region){
  
 }
 
-#Get and return anomalies for a whole region
-get_region_anomalies_cooks <- function(phenom, bbox){
+#Get and return anomalies for a whole region using the two methods (can add other methods and call the function within this function for future use)
+get_region_anomalies <- function(phenom, bbox){
   #Get all the boxes
-  boxes <- osem_boxes()
+  boxes <- osem_boxes(cache = getwd())
   
   #Filter boxes to region
   region_boxes <<- boxes %>%
@@ -93,22 +93,23 @@ get_region_anomalies_cooks <- function(phenom, bbox){
   #Get phenom data frame  
   phenom_df <<- osem_measurements(
     bbox,
-    exposure="outdoor",
     phenomenon = phenom,
-    from = now() - minutes(5),
-    to = now(),
-    cache = '.'
+    from = now() - hours(1),
+    to = now()
   )
+  
+  #Function calls of different methods
   find_outliers_iqr_sd(phenom_df)
   
-  #Create linear model
+  #Create linear model for methods that require a model
   overall_model <- lm(value ~ createdAt, data = phenom_df, na.action=na.omit)
   find_defective_cooks(overall_model, phenom_df, region_boxes)
   
+  #Create a clean data frame
   clean_data <<- phenom_df %>%
     filter(!phenom_df$value %in% influential_df$value) %>%
     select(value, createdAt, sensorId, lat, lon)
-
+  
   clean_model <- lm(value ~ createdAt, data=clean_data)
   find_potential_anomaly_cooks(clean_model, clean_data, region_boxes)
   
@@ -117,6 +118,6 @@ get_region_anomalies_cooks <- function(phenom, bbox){
     select(value, createdAt, sensorId, lat, lon)
   
   normal_temp_df <<- data.frame(value = normal_temp$value, box_id = region_boxes$X_id[normal_temp$value], lat = normal_temp$lat, lon = normal_temp$lon)
-  
 }
-get_region_anomalies_cooks("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))
+
+get_region_anomalies("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))
