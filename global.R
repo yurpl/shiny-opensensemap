@@ -119,9 +119,4 @@ get_region_anomalies_cooks <- function(phenom, bbox){
   normal_temp_df <<- data.frame(value = normal_temp$value, box_id = region_boxes$X_id[normal_temp$value], lat = normal_temp$lat, lon = normal_temp$lon)
   
 }
-
-
-#Find and create data frames for IQR and standard deviation detection
-#Detects outliers using 1.5 * IQR rule and then uses standard deviation detection finding data 2 standard deviations away from the mean
-
 get_region_anomalies_cooks("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))

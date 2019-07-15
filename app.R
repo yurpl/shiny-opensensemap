@@ -18,9 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 # SOFTWARE.
 
-
-#TO DO: Make the points look nicer
-
 library(shiny)
 library(leaflet)
 source("global.R", local = TRUE)
@@ -68,6 +65,12 @@ server <- function(input, output) {
         
         leaflet(region_boxes) %>%
             addTiles() %>%
+            addLegend(
+                colors = c('#00851f', '#f2ff00', '#ff0000'),
+                labels = c('Normal data', 'Potential anomaly', 'Defective box'),
+                title = "Legend for data point colors",
+                opacity = 1
+            ) %>%
             fitBounds(~min(lon), ~min(lat), ~max(lon), ~max(lat))
     })
     
@@ -100,7 +103,7 @@ server <- function(input, output) {
                 clearMarkers() %>%
                 addCircleMarkers(lng = jitter(normal_temp$lon), lat = jitter(normal_temp$lat), radius = 4, color = '#00851f', popup = paste("Box ID:", normal_temp_df$box_id, "<br>","Temperature:", normal_temp_df$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1) %>%
                 addCircleMarkers(lng = jitter(local_anomaly_df$lon), lat = jitter(local_anomaly_df$lat), radius = 6, color = '#f2ff00', popup = paste("Box ID:", local_anomaly_df$box_id, "<br>", "Temperature:", local_anomaly_df$value, "Celsius", "</br>"),  stroke = FALSE, fillOpacity = 1) %>%
-                addCircleMarkers(lng = jitter(influential_boxes$lon), lat = jitter(influential_boxes$lat), radius = 6, color = '#ff0000', popup = paste("Box ID:", influential_boxes$box_id, "<br>","Temperature:", influential_boxes$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1, weight = 1)
+                addCircleMarkers(lng = jitter(influential_boxes$lon), lat = jitter(influential_boxes$lat), radius = 6, color = '#ff0000', popup = paste("Box ID:", influential_boxes$box_id, "<br>","Temperature:", influential_boxes$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1,)
         }
         
         #IQR input
