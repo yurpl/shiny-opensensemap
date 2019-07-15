@@ -103,7 +103,7 @@ server <- function(input, output) {
                 clearMarkers() %>%
                 addCircleMarkers(lng = jitter(normal_temp$lon), lat = jitter(normal_temp$lat), radius = 4, color = '#00851f', popup = paste("Box ID:", normal_temp_df$box_id, "<br>","Temperature:", normal_temp_df$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1) %>%
                 addCircleMarkers(lng = jitter(local_anomaly_df$lon), lat = jitter(local_anomaly_df$lat), radius = 6, color = '#f2ff00', popup = paste("Box ID:", local_anomaly_df$box_id, "<br>", "Temperature:", local_anomaly_df$value, "Celsius", "</br>"),  stroke = FALSE, fillOpacity = 1) %>%
-                addCircleMarkers(lng = jitter(influential_boxes$lon), lat = jitter(influential_boxes$lat), radius = 6, color = '#ff0000', popup = paste("Box ID:", influential_boxes$box_id, "<br>","Temperature:", influential_boxes$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1,)
+                addCircleMarkers(lng = jitter(influential_boxes$lon), lat = jitter(influential_boxes$lat), radius = 6, color = '#ff0000', popup = paste("Box ID:", influential_boxes$box_id, "<br>","Temperature:", influential_boxes$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1)
         }
         
         #IQR input
