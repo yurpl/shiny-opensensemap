@@ -24,7 +24,6 @@ source("global.R", local = TRUE)
 
 #Define UI
 ui <- fluidPage(
-
     # Application title
     titlePanel("openSenseMap data for Nordrhein Westfalen"),
     sidebarLayout(
@@ -36,7 +35,7 @@ ui <- fluidPage(
                         choices = c("Cook's distance", "IQR"),
                         selected = "Cook's distance"
             ),
-            
+            br(),
             #Create input for type of data
             selectInput("type",
                         label = "Choose the type of data to display",
@@ -45,7 +44,8 @@ ui <- fluidPage(
         ),
         
         # Show a plot of the generated distribution
-            mainPanel(leafletOutput("map", width = "100%", height = 600))
+        mainPanel(leafletOutput("map", width = "100%", height = 600))
+        
     )
 )
 
@@ -71,6 +71,7 @@ server <- function(input, output) {
             ) %>%
             fitBounds(~min(lon), ~min(lat), ~max(lon), ~max(lat))
     })
+    
     
     #Show data on leaflet based on selected input
     observeEvent({input$type
@@ -128,9 +129,7 @@ server <- function(input, output) {
                 addCircleMarkers(lng = (potential_anomalies_iqr$lon), lat = (potential_anomalies_iqr$lat), radius = 6, color = '#f2ff00', popup = paste("Box ID:", potential_anomalies_iqr$box_id, "<br>", "Temperature:", potential_anomalies_iqr$value, "Celsius", "</br>"),  stroke = FALSE, fillOpacity = 1) %>%
                 addCircleMarkers(lng = (normal_iqr_values_df$lon), lat = (normal_iqr_values_df$lat), radius = 4, color = '#00851f', popup = paste("Box ID:", normal_iqr_values_df$box_id, "<br>","Temperature:", normal_iqr_values_df$value, "Celsius", "</br>"), stroke = FALSE, fillOpacity = 1)
         }
-         
     })
-    
 }
 
 # Run the application 

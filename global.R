@@ -94,7 +94,7 @@ get_region_anomalies <- function(phenom, bbox){
   phenom_df <<- osem_measurements(
     bbox,
     phenomenon = phenom,
-    from = now() - hours(1),
+    from = now() - minutes(10),
     to = now()
   )
   
