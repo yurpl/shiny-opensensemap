@@ -19,6 +19,10 @@
 # SOFTWARE.
 #
 # Function to get sensebox data and find influential values using cook's distance method and IQR method
+# get_region_anomalies(phenom, bbox)
+# @param phenom: The phenomena you are looking for. For example: "Temperatur", "PM2.5", etc.
+# @param bbox: An st_bbox of the data boundaries. For example: st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))) creates a bounding box of all the boxes in the Nordrhein Westfalen region
+# @returns: data frames of clean data, potential anomalies, and defective boxes within the bounding box using IQR and cook's distance methods.
 
 #Load required libraries
 library(tidyverse)
