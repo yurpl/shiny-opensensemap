@@ -65,7 +65,7 @@ get_bbox_data <- function(phenom, bbox) {
   boxes <- osem_boxes(cache = getwd())
   
   #Filter boxes to region
-  region <<- boxes %>%
+  region_boxes <<- boxes %>%
     dplyr::filter(lon >= bbox$xmin & lon <= bbox$xmax & lat >= bbox$ymin & lat <= bbox$ymax) %>%
     dplyr::filter(!is.na(lastMeasurement))
   
@@ -83,7 +83,7 @@ get_bbox_data <- function(phenom, bbox) {
   
   cooksd <- cooks.distance(model)
   influential <- as.numeric(names(cooksd)[(cooksd > (4/nrow(phenom_df)))])
-  influential_df <<- data.frame(value = phenom_df$value[influential], box_id = region$X_id[phenom_df$sensorId[influential]], lat = phenom_df$lat[influential], lon = phenom_df$lon[influential])
+  influential_df <<- data.frame(value = phenom_df$value[influential], box_id = region_boxes$X_id[phenom_df$sensorId[influential]], lat = phenom_df$lat[influential], lon = phenom_df$lon[influential])
   influential_boxes <<- unique(influential_df)
   
   clean_data <<- phenom_df %>%
@@ -94,7 +94,7 @@ get_bbox_data <- function(phenom, bbox) {
   
   clean_cooks <<- cooks.distance(clean_model)
   clean_influential <- as.numeric(names(clean_cooks)[(clean_cooks > (4/nrow(clean_data)))])
-  local_anomaly_df <<- data.frame(value=clean_data$value[clean_influential], box_id = region$X_id[clean_data$sensorId[clean_influential]], lat = clean_data$lat[clean_influential], lon = clean_data$lon[clean_influential])
+  local_anomaly_df <<- data.frame(value=clean_data$value[clean_influential], box_id = region_boxes$X_id[clean_data$sensorId[clean_influential]], lat = clean_data$lat[clean_influential], lon = clean_data$lon[clean_influential])
   local_anomaly_boxes <<- unique(local_anomaly_df)
   
   normal_temp <<- clean_data %>%
