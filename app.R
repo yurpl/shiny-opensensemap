@@ -18,16 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 # SOFTWARE.
 
-# TO DO:
-# DISPLAY SUMMARY OF DATA []
-# EXPORT AS CSV []
-# CREATE BBOX USING LEAFLET BASED ON WHERE ZOOMED IN []
-# FINE TUNE COOK'S CORRECTION []
-# CLARIFY COOK'S DISTANCE AND IQR ON APP []
-# 
-
-
-
 library(shiny)
 library(leaflet)
 source("global.R", local = TRUE)
@@ -64,7 +54,7 @@ ui <- fluidPage(
         ),
         
         # Show a plot of the generated distribution
-        mainPanel(leafletOutput("map", width = "100%", height = 600))
+        mainPanel(leafletOutput("map", width = "100%", height = 500))
         
     )
 )
