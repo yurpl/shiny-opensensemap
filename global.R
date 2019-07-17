@@ -19,7 +19,7 @@
 # SOFTWARE.
 #
 # Function to get sensebox data and find influential values using cook's distance method and IQR method
-# get_region_anomalies(phenom, bbox)
+# get_bbox_data(phenom, bbox)
 # @param phenom: The phenomena you are looking for. For example: "Temperatur", "PM2.5", etc.
 # @param bbox: An st_bbox of the data boundaries. For example: st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))) creates a bounding box of all the boxes in the Nordrhein Westfalen region
 # @returns: data frames of clean data, potential anomalies, and defective boxes within the bounding box using IQR and cook's distance methods.
@@ -60,68 +60,50 @@ find_outliers_iqr_sd <<- function(df){
 }
 
 
-#Find defective boxes in a region based on a linear regression model and cooks distance
-find_defective_cooks <<- function(model, df, region){
+get_bbox_data <- function(phenom, bbox) {
   
-  cooksd <- cooks.distance(model)
-  influential <- as.numeric(names(cooksd)[(cooksd > (4/nrow(df)))])
-  influential_df <<- data.frame(value = df$value[influential], box_id = region$X_id[df$sensorId[influential]], lat = df$lat[influential], lon = df$lon[influential])
-  influential_boxes <<- unique(influential_df)
-
-  return(influential_boxes)
-}
-
-
-#Find potential data anomalies in a region based on a clean linear regression model and cooks distance
-find_potential_anomaly_cooks <<- function(clean_model, clean_df, region){
-  
-  clean_cooks <<- cooks.distance(clean_model)
-  clean_influential <- as.numeric(names(clean_cooks)[(clean_cooks > (4/nrow(clean_df)))])
-  local_anomaly_df <<- data.frame(value=clean_df$value[clean_influential], box_id = region$X_id[clean_df$sensorId[clean_influential]], lat = clean_df$lat[clean_influential], lon = clean_df$lon[clean_influential])
-  local_anomaly_boxes <<- unique(local_anomaly_df)
-  return(local_anomaly_df)
-  
- 
-}
-
-#Get and return anomalies for a whole region using the two methods (can add other methods and call the function within this function for future use)
-get_region_anomalies <- function(phenom, bbox){
-  #Get all the boxes
   boxes <- osem_boxes(cache = getwd())
   
   #Filter boxes to region
-  region_boxes <<- boxes %>%
+  region <<- boxes %>%
     dplyr::filter(lon >= bbox$xmin & lon <= bbox$xmax & lat >= bbox$ymin & lat <= bbox$ymax) %>%
     dplyr::filter(!is.na(lastMeasurement))
   
-  #Get phenom data frame  
+  
   phenom_df <<- osem_measurements(
     bbox,
     phenomenon = phenom,
-    from = now() - minutes(10),
+    from = now() - minutes(30),
     to = now()
   )
   
-  #Function calls of different methods
   find_outliers_iqr_sd(phenom_df)
   
-  #Create linear model for methods that require a model
-  overall_model <- lm(value ~ createdAt, data = phenom_df, na.action=na.omit)
-  find_defective_cooks(overall_model, phenom_df, region_boxes)
+  model <- lm(value ~ createdAt, data = phenom_df, na.action=na.omit)
   
-  #Create a clean data frame
+  cooksd <- cooks.distance(model)
+  influential <- as.numeric(names(cooksd)[(cooksd > (4/nrow(phenom_df)))])
+  influential_df <<- data.frame(value = phenom_df$value[influential], box_id = region$X_id[phenom_df$sensorId[influential]], lat = phenom_df$lat[influential], lon = phenom_df$lon[influential])
+  influential_boxes <<- unique(influential_df)
+  
   clean_data <<- phenom_df %>%
     filter(!phenom_df$value %in% influential_df$value) %>%
     select(value, createdAt, sensorId, lat, lon)
   
   clean_model <- lm(value ~ createdAt, data=clean_data)
-  find_potential_anomaly_cooks(clean_model, clean_data, region_boxes)
+  
+  clean_cooks <<- cooks.distance(clean_model)
+  clean_influential <- as.numeric(names(clean_cooks)[(clean_cooks > (4/nrow(clean_data)))])
+  local_anomaly_df <<- data.frame(value=clean_data$value[clean_influential], box_id = region$X_id[clean_data$sensorId[clean_influential]], lat = clean_data$lat[clean_influential], lon = clean_data$lon[clean_influential])
+  local_anomaly_boxes <<- unique(local_anomaly_df)
   
   normal_temp <<- clean_data %>%
     filter(!clean_data$value %in% local_anomaly_df$value) %>%
     select(value, createdAt, sensorId, lat, lon)
   
   normal_temp_df <<- data.frame(value = normal_temp$value, box_id = region_boxes$X_id[normal_temp$sensorId], lat = normal_temp$lat, lon = normal_temp$lon)
+  
 }
-get_region_anomalies("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))
+
+get_bbox_data("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))
 
