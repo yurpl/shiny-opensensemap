@@ -32,34 +32,6 @@ library(sp)
 library(units)
 library(opensensmapr)
 
-
-
-#Function to find outliers using IQR and SD
-find_outliers_iqr_sd <<- function(df){
-  range_iqr <- 1.5 * IQR(df$value)
-  upper_iqr <- quantile(df$value, .75) + range_iqr
-  lower_iqr <- quantile(df$value, .25) - range_iqr
-  
-  outliers <<- df$value[df$value > upper_iqr | df$value < lower_iqr]
-  
-  defective_boxes_iqr <<- data.frame(value = outliers, box_id = region_boxes$X_id[phenom_df$sensorId[phenom_df$value %in% outliers]], lon = df$lon[df$value %in% outliers], lat = df$lat[df$value %in% outliers])
-  
-  clean_defective_boxes_iqr <<- phenom_df %>%
-    filter(!phenom_df$value %in% defective_boxes_iqr$value) %>%
-    select(value, lon, lat, sensorId)
-  
-  sd_outliers <<- clean_defective_boxes_iqr$value[(clean_defective_boxes_iqr$value > mean(clean_defective_boxes_iqr$value) + 2 * sd(clean_defective_boxes_iqr$value)) | (clean_defective_boxes_iqr$value < mean(clean_defective_boxes_iqr$value) - 2 * sd(clean_defective_boxes_iqr$value))]
-  
-  potential_anomalies_iqr <<- data.frame(value = sd_outliers, box_id = region_boxes$X_id[df$sensorId[df$value %in% sd_outliers]], lon = df$lon[df$value %in% sd_outliers], lat = df$lat[df$value %in% sd_outliers])
-  
-  normal_iqr_values <<- clean_defective_boxes_iqr %>%
-    filter(!clean_defective_boxes_iqr$value %in% potential_anomalies_iqr$value) %>%
-    select(value, lon, lat, sensorId)
-  
-  normal_iqr_values_df <<- data.frame(value = normal_iqr_values$value, box_id = region_boxes$X_id[normal_iqr_values$sensorId], lat = normal_iqr_values$lat, lon = normal_iqr_values$lon)
-}
-
-
 get_bbox_data <- function(phenom, bbox) {
   
   boxes <- osem_boxes(cache = getwd())
@@ -76,8 +48,6 @@ get_bbox_data <- function(phenom, bbox) {
     from = now() - minutes(30),
     to = now()
   )
-  
-  find_outliers_iqr_sd(phenom_df)
   
   model <- lm(value ~ createdAt, data = phenom_df, na.action=na.omit)
   
@@ -103,6 +73,27 @@ get_bbox_data <- function(phenom, bbox) {
   
   normal_temp_df <<- data.frame(value = normal_temp$value, box_id = region_boxes$X_id[normal_temp$sensorId], lat = normal_temp$lat, lon = normal_temp$lon)
   
+  range_iqr <- 1.5 * IQR(phenom_df$value)
+  upper_iqr <- quantile(phenom_df$value, .75) + range_iqr
+  lower_iqr <- quantile(phenom_df$value, .25) - range_iqr
+  
+  outliers <<- phenom_df$value[phenom_df$value > upper_iqr | phenom_df$value < lower_iqr]
+  
+  defective_boxes_iqr <<- data.frame(value = outliers, box_id = region_boxes$X_id[phenom_df$sensorId[phenom_df$value %in% outliers]], lon = phenom_df$lon[phenom_df$value %in% outliers], lat = phenom_df$lat[phenom_df$value %in% outliers])
+  
+  clean_defective_boxes_iqr <<- phenom_df %>%
+    filter(!phenom_df$value %in% defective_boxes_iqr$value) %>%
+    select(value, lon, lat, sensorId)
+  
+  sd_outliers <<- clean_defective_boxes_iqr$value[(clean_defective_boxes_iqr$value > mean(clean_defective_boxes_iqr$value) + 2 * sd(clean_defective_boxes_iqr$value)) | (clean_defective_boxes_iqr$value < mean(clean_defective_boxes_iqr$value) - 2 * sd(clean_defective_boxes_iqr$value))]
+  
+  potential_anomalies_iqr <<- data.frame(value = sd_outliers, box_id = region_boxes$X_id[phenom_df$sensorId[phenom_df$value %in% sd_outliers]], lon = phenom_df$lon[phenom_df$value %in% sd_outliers], lat = phenom_df$lat[phenom_df$value %in% sd_outliers])
+  
+  normal_iqr_values <<- clean_defective_boxes_iqr %>%
+    filter(!clean_defective_boxes_iqr$value %in% potential_anomalies_iqr$value) %>%
+    select(value, lon, lat, sensorId)
+  
+  normal_iqr_values_df <<- data.frame(value = normal_iqr_values$value, box_id = region_boxes$X_id[normal_iqr_values$sensorId], lat = normal_iqr_values$lat, lon = normal_iqr_values$lon)
 }
 
 get_bbox_data("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))

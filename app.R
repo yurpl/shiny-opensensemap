@@ -30,7 +30,7 @@ ui <- fluidPage(
         sidebarPanel(
             selectInput("phenom",
                         label = "Choose a phenomenon to display",
-                        choices = "Temperature",
+                        choices = c("Temperature", "PM2.5"),
                         selected = "Temperature"
                         ),
             br(),
