@@ -46,7 +46,7 @@ find_outliers_iqr_sd <<- function(df){
   
   clean_defective_boxes_iqr <<- phenom_df %>%
     filter(!phenom_df$value %in% defective_boxes_iqr$value) %>%
-    select(value, lon, lat)
+    select(value, lon, lat, sensorId)
   
   sd_outliers <<- clean_defective_boxes_iqr$value[(clean_defective_boxes_iqr$value > mean(clean_defective_boxes_iqr$value) + 2 * sd(clean_defective_boxes_iqr$value)) | (clean_defective_boxes_iqr$value < mean(clean_defective_boxes_iqr$value) - 2 * sd(clean_defective_boxes_iqr$value))]
   
@@ -54,9 +54,9 @@ find_outliers_iqr_sd <<- function(df){
   
   normal_iqr_values <<- clean_defective_boxes_iqr %>%
     filter(!clean_defective_boxes_iqr$value %in% potential_anomalies_iqr$value) %>%
-    select(value, lon, lat)
+    select(value, lon, lat, sensorId)
   
-  normal_iqr_values_df <<- data.frame(value = normal_iqr_values$value, box_id = region_boxes$X_id[normal_iqr_values$value], lat = normal_iqr_values$lat, lon = normal_iqr_values$lon)
+  normal_iqr_values_df <<- data.frame(value = normal_iqr_values$value, box_id = region_boxes$X_id[normal_iqr_values$sensorId], lat = normal_iqr_values$lat, lon = normal_iqr_values$lon)
 }
 
 
@@ -121,7 +121,7 @@ get_region_anomalies <- function(phenom, bbox){
     filter(!clean_data$value %in% local_anomaly_df$value) %>%
     select(value, createdAt, sensorId, lat, lon)
   
-  normal_temp_df <<- data.frame(value = normal_temp$value, box_id = region_boxes$X_id[normal_temp$value], lat = normal_temp$lat, lon = normal_temp$lon)
+  normal_temp_df <<- data.frame(value = normal_temp$value, box_id = region_boxes$X_id[normal_temp$sensorId], lat = normal_temp$lat, lon = normal_temp$lon)
 }
-
 get_region_anomalies("Temperatur", st_bbox(st_multipoint(matrix(c(5.8664, 9.4623, 50.3276, 52.5325), 2, 2))))
+

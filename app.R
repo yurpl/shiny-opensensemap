@@ -28,7 +28,12 @@ ui <- fluidPage(
     titlePanel("openSenseMap data for Nordrhein Westfalen"),
     sidebarLayout(
         sidebarPanel(
-            
+            selectInput("phenom",
+                        label = "Choose a phenomenon to display",
+                        choices = "Temperature",
+                        selected = "Temperature"
+                        ),
+            br(),
             #Create input for phenomena
             selectInput("stat",
                         label = "Choose the outlier detection method",
@@ -51,7 +56,6 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    
     #Convert data to reactive 
     data <- reactive({
         nrw <- region_boxes
@@ -70,13 +74,12 @@ server <- function(input, output) {
                 opacity = 1
             ) %>%
             fitBounds(~min(lon), ~min(lat), ~max(lon), ~max(lat))
+        
     })
-    
     
     #Show data on leaflet based on selected input
     observeEvent({input$type
         input$stat}, {
-        
         proxy <- leafletProxy('map')
         
         #Cook's Distance input
