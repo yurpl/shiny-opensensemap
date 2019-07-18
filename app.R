@@ -50,7 +50,9 @@ ui <- fluidPage(
             tags$div(class="header", checked=NA,
                      tags$p("Summary of data")
                      ),
-            verbatimTextOutput("summary")
+            verbatimTextOutput("summary"),
+            br(),
+            downloadButton("download", "Download selected data")
         ),
         
         # Show a plot of the generated distribution
@@ -96,6 +98,14 @@ server <- function(input, output) {
             output$summary <- renderPrint({
                 summary(normal_temp_df$value)
             })
+            output$download <- downloadHandler(
+                filename = function() {
+                    paste("normal_cooks_values", ".csv", sep = "")
+                },
+                content = function(file) {
+                    write.csv(unique(normal_temp_df), file)
+                }
+            )
         }
         
         else if(input$type == "Potential anomaly" & input$stat == "Cook's distance"){
@@ -105,6 +115,14 @@ server <- function(input, output) {
             output$summary <- renderPrint({
                 summary(local_anomaly_df$value)
             })
+            output$download <- downloadHandler(
+                filename = function() {
+                    paste("cooks_potential_anomaly_values", ".csv", sep = "")
+                },
+                content = function(file) {
+                    write.csv(unique(local_anomaly_df), file)
+                }
+            )
         }
         
         else if(input$type == "Defective box" & input$stat == "Cook's distance"){
@@ -114,6 +132,14 @@ server <- function(input, output) {
             output$summary <- renderPrint({
                 summary(influential_boxes$value)
             })
+            output$download <- downloadHandler(
+                filename = function() {
+                    paste("cooks_defective_sensors", ".csv", sep = "")
+                },
+                content = function(file) {
+                    write.csv(unique(influential_df), file)
+                }
+            )
         }
         else if(input$type == "All" & input$stat == "Cook's distance"){
             proxy %>% 
@@ -124,6 +150,14 @@ server <- function(input, output) {
             output$summary <- renderPrint({
                 summary(phenom_df$value)
             })
+            output$download <- downloadHandler(
+                filename = function() {
+                    paste("all_temp_data", ".csv", sep = "")
+                },
+                content = function(file) {
+                    write.csv(phenom_df, file)
+                }
+            )
         }
         
         #IQR input
@@ -134,6 +168,14 @@ server <- function(input, output) {
             output$summary <- renderPrint({
                 summary(defective_boxes_iqr$value)
             })
+            output$download <- downloadHandler(
+                filename = function() {
+                    paste("defective_sensors_iqr", ".csv", sep = "")
+                },
+                content = function(file) {
+                    write.csv(unique(defective_boxes_iqr), file)
+                }
+            )
         }
         
         else if(input$type == "Potential anomaly" & input$stat == "IQR"){
@@ -143,6 +185,14 @@ server <- function(input, output) {
             output$summary <- renderPrint({
                 summary(potential_anomalies_iqr$value)
             })
+            output$download <- downloadHandler(
+                filename = function() {
+                    paste("iqr_potential_anomaly", ".csv", sep = "")
+                },
+                content = function(file) {
+                    write.csv(unique(potential_anomalies_iqr), file)
+                }
+            )
         }
         else if(input$type == "Normal" & input$stat == "IQR"){
             proxy %>%
@@ -151,6 +201,14 @@ server <- function(input, output) {
             output$summary <- renderPrint({
                 summary(normal_iqr_values_df$value)
             })
+            output$download <- downloadHandler(
+                filename = function() {
+                    paste("normal_iqr_values", ".csv", sep = "")
+                },
+                content = function(file) {
+                    write.csv(unique(normal_iqr_values_df), file)
+                }
+            )
         }
         else if(input$type == "All" & input$stat == "IQR"){
             proxy %>%
@@ -161,6 +219,14 @@ server <- function(input, output) {
             output$summary <- renderPrint({
                 summary(phenom_df$value)
             })
+            output$download <- downloadHandler(
+                filename = function() {
+                    paste("all_temp_data", ".csv", sep = "")
+                },
+                content = function(file) {
+                    write.csv(phenom_df, file)
+                }
+            )
         }
     })
 
