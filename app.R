@@ -63,6 +63,7 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+    
     #Convert data to reactive 
     data <- reactive({
         region_boxes
@@ -84,6 +85,7 @@ server <- function(input, output) {
             ) %>%
             fitBounds(~min(lon), ~min(lat), ~max(lon), ~max(lat))
     })
+    
     
     #Show data on leaflet based on selected input
     observeEvent({input$type
@@ -152,7 +154,7 @@ server <- function(input, output) {
             })
             output$download <- downloadHandler(
                 filename = function() {
-                    paste("all_temp_data", ".csv", sep = "")
+                    paste("all_temp_data_cooks", ".csv", sep = "")
                 },
                 content = function(file) {
                     write.csv(phenom_df, file)
