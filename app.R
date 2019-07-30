@@ -20,12 +20,15 @@
 
 library(shiny)
 library(leaflet)
+library(shinyalert)
 source("global.R", local = TRUE)
 
 #Define UI
 ui <- fluidPage(
     # Application title
     titlePanel("openSenseMap data for Nordrhein Westfalen"),
+    #Use shiny alert
+    useShinyalert(),
     sidebarLayout(
         sidebarPanel(
             selectInput("phenom",
@@ -40,6 +43,7 @@ ui <- fluidPage(
                         choices = c("Cook's distance", "IQR"),
                         selected = "Cook's distance"
             ),
+            actionButton("info", "Info on statistical methods", icon = icon("info")),
             br(),
             #Create input for type of data
             selectInput("type",
@@ -86,7 +90,27 @@ server <- function(input, output) {
             fitBounds(~min(lon), ~min(lat), ~max(lon), ~max(lat))
     })
     
-    
+    observeEvent(input$info, {
+        shinyalert(
+            title = "",
+            text = "<b>Cook's distance anomaly detection:</b> Cook's distance is a measure of the influence of a data point shen performing a least squares regression. In the app, this works by first creating a linear regression model of the temperature versus created at values. The a point of influence is defined as a point that has a cook's distance higher than (4 / number of observations). These points of influence are then marked as defective boxes because they have a very high cook's distance. 
+            After this, a model of the clean data is created and the cook's distance is used again to find points of influence. These points of influence are weather anomalies in the region.
+            <br/>
+            <b>IQR anomaly detection:</b> IQR, or interquartile range, is the difference between the 75th percentile of data and the 25th percentile of the data (IQR = Q3 - Q1). To find outliers using IQR, the app finds the IQR of the temperature values in Nordrhein Westfalen. It then uses the (1.5 * IQR) to determine which values are outliers. 
+            If an observation is less than the 25th percentile of data minus (1.5 * IQR), then it is a low outlier(Q1 - (1.5 * IQR)). If an observation is more than the 75th percentile of data plus (1.5 * IQR), then it is a high outlier(Q3 + (1.5 * IQR)). This method found the defective boxes which were extreme low outliers. After cleaning the outliers from the data, the app finds values more than 2 standard deviations away from the mean of the temperature values which are then flagged as potential data anomalies.",
+            closeOnEsc = TRUE,
+            closeOnClickOutside = FALSE,
+            html = TRUE,
+            type = "info",
+            showConfirmButton = TRUE,
+            showCancelButton = FALSE,
+            confirmButtonText = "OK",
+            confirmButtonCol = "#AEDEF4",
+            timer = 0,
+            imageUrl = "",
+            animation = TRUE
+        )
+    })
     #Show data on leaflet based on selected input
     observeEvent({input$type
         input$stat}, {
@@ -231,7 +255,6 @@ server <- function(input, output) {
             )
         }
     })
-
 }
 
 # Run the application 
